@@ -1,9 +1,9 @@
 import socket
 from dnslib import DNSRecord
-from datetime import datetime
+from datetime import datetime, timezone
 
 UPSTREAM_DNS = ("1.1.1.1", 53)
-LISTEN_ADDRESS = ("0.0.0.0", 5353)
+LISTEN_ADDRESS = ("0.0.0.0", 5300)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(LISTEN_ADDRESS)
@@ -17,7 +17,7 @@ while True:
         request = DNSRecord.parse(data)
         domain = str(request.q.qname)
 
-        print(f"[{datetime.utcnow()}] {addr[0]} → {domain}")
+        print(f"[{datetime.utcnow(timezone.utc)}] {addr[0]} → {domain}")
 
         upstream_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         upstream_sock.settimeout(3)
@@ -28,4 +28,11 @@ while True:
 
     except Exception as e:
         print("Error:", e)
+
+
+
+
+
+
+
 
