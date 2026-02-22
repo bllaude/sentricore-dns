@@ -1,12 +1,25 @@
 import socket
-from dnslib import DNSRecord
+from dnslib import DNSRecord, DNSHeader, RR, A, RCODE
 from datetime import datetime, timezone
 
 UPSTREAM_DNS = ("1.1.1.1", 53)
 LISTEN_ADDRESS = ("0.0.0.0", 5300)
+BLOCKLIST_PATH = "blocklists/malware.txt"
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(LISTEN_ADDRESS)
+
+#blocklist loader
+def load_blocklist():
+    try:
+        with open(BLOCKLIST_PATH, "r") as f:
+            return set(line.strip().lower() for line in f if line.strip())
+    except FileNotFoundError:
+        return set()
+
+BLOCKLIST = load_blocklist()
+print(f"Loaded {len(BLOCKLIST)} blocked domains.")
+#end blocklist loader
 
 print("Sentricore DNS Proxy running on port 5353...")
 
@@ -15,9 +28,19 @@ while True:
         data, addr = sock.recvfrom(512)
 
         request = DNSRecord.parse(data)
-        domain = str(request.q.qname)
+        domain = str(request.q.qname).rstrip('.').lower() #block logic
 
-        print(f"[{datetime.utcnow(timezone.utc)}] {addr[0]} → {domain}")
+        print(f"[{datetime.now(timezone.utc)}] {addr[0]} → {domain}")
+        
+
+        if domain in BLOCKLIST:
+            print(f"[BLOCKED] {addr[0]} → {domain}")
+
+            reply = request.reply()
+            reply.header.rcode = RCODE.NXDOMAIN
+
+            sock.sendto(reply.pack(), addr)
+            continue
 
         upstream_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         upstream_sock.settimeout(3)
@@ -28,10 +51,6 @@ while True:
 
     except Exception as e:
         print("Error:", e)
-
-
-
-
 
 
 
