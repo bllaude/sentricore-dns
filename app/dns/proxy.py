@@ -9,6 +9,8 @@ BLOCKLIST_PATH = "blocklists/malware.txt"
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(LISTEN_ADDRESS)
 
+print("Sentricore DNS Proxy running on port 5353...")
+
 #blocklist loader
 def load_blocklist():
     try:
@@ -21,8 +23,6 @@ BLOCKLIST = load_blocklist()
 print(f"Loaded {len(BLOCKLIST)} blocked domains.")
 #end blocklist loader
 
-print("Sentricore DNS Proxy running on port 5353...")
-
 while True:
     try:
         data, addr = sock.recvfrom(512)
@@ -30,9 +30,8 @@ while True:
         request = DNSRecord.parse(data)
         domain = str(request.q.qname).rstrip('.').lower() #block logic
 
-        print(f"[{datetime.now(timezone.utc)}] {addr[0]} → {domain}")
-        
-
+        print(f"[{datetime.now(timezone.utc)}] {addr[0]} → {domain}") 
+"""
         if domain in BLOCKLIST:
             print(f"[BLOCKED] {addr[0]} → {domain}")
 
@@ -41,6 +40,14 @@ while True:
 
             sock.sendto(reply.pack(), addr)
             continue
+"""
+        #suffix-based blocking
+        if is_blocked(domain):
+           for blocked in BLOCKLIST:
+               if domain == blocked or domain.endswith("." + blocked):
+                   return True
+           return False
+        #end suffix-based blocking
 
         upstream_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         upstream_sock.settimeout(3)
