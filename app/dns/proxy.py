@@ -1,4 +1,5 @@
 import socket
+from app.models.database import init_db, log_query
 from dnslib import DNSRecord, RCODE
 from datetime import datetime, timezone
 
@@ -16,6 +17,7 @@ def load_blocklist():
 
 
 BLOCKLIST = load_blocklist()
+init_db()
 print(f"Loaded {len(BLOCKLIST)} blocked domains.")
 
 
@@ -43,11 +45,15 @@ while True:
         if is_blocked(domain):
             print(f"[BLOCKED] {addr[0]} → {domain}")
 
+            log_query(addr[0], domain, True)
+
             reply = request.reply()
             reply.header.rcode = RCODE.NXDOMAIN
 
             sock.sendto(reply.pack(), addr)
             continue
+
+        log_query(addr[0], domain, False)
 
         upstream_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         upstream_sock.settimeout(3)
