@@ -31,7 +31,7 @@ def is_blocked(domain):
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(LISTEN_ADDRESS)
 
-print("Sentricore DNS Proxy running on port 5353...")
+print("Sentricore DNS Proxy running on port 5300...")
 
 while True:
     try:
