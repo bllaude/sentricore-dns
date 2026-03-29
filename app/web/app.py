@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request
 import sqlite3
+import json
 from pathlib import Path
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = BASE_DIR / "data"
-DB_PATH = DATA_DIR / "sentricore.db"
+CONFIG = json.load(open('config.json'))
+DB_PATH = CONFIG['database_path']
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)

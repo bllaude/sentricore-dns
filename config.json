@@ -1,0 +1,8 @@
+{
+    "upstream_dns": ["1.1.1.1", 53],
+    "listen_address": ["0.0.0.0", 5300],
+    "blocklist_path": "blocklists/malware.txt",
+    "cache_ttl": 300,
+    "cache_max_size": 10000,
+    "database_path": "data/sentricore.db"
+}

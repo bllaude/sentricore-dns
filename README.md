@@ -40,10 +40,14 @@ The runners automatically use the virtual environment's Python, so no need to ac
 
 ## Configuration
 
-- Blocklists are in the `blocklists/` folder
-- Database is stored in `data/sentricore.db`
-- Proxy listens on 0.0.0.0:5300
-- Upstream DNS: 1.1.1.1
+Settings are configured in `config.json`:
+
+- `upstream_dns`: Upstream DNS server [IP, port]
+- `listen_address`: Proxy listen address [IP, port]
+- `blocklist_path`: Path to blocklist file
+- `cache_ttl`: DNS cache TTL in seconds
+- `cache_max_size`: Maximum cache entries
+- `database_path`: Path to SQLite database
 
 ## Blocklists
 

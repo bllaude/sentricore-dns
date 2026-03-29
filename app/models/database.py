@@ -4,13 +4,16 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
-DB_PATH = DATA_DIR / "sentricore.db"
 
 
-def init_db():
-    DATA_DIR.mkdir(exist_ok=True)
+def init_db(db_path=None):
+    if db_path is None:
+        db_path = DATA_DIR / "sentricore.db"
+    else:
+        db_path = Path(db_path)
+        db_path.parent.mkdir(exist_ok=True)
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -27,8 +30,10 @@ def init_db():
     conn.close()
 
 
-def log_query(client_ip, domain, blocked):
-    conn = sqlite3.connect(DB_PATH)
+def log_query(client_ip, domain, blocked, db_path=None):
+    if db_path is None:
+        db_path = DATA_DIR / "sentricore.db"
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     cursor.execute("""

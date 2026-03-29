@@ -1,11 +1,18 @@
 import socket
+import time
+import json
+import logging
 from app.models.database import init_db, log_query
 from dnslib import DNSRecord, RCODE
 from datetime import datetime, timezone
 
-UPSTREAM_DNS = ("1.1.1.1", 53)
-LISTEN_ADDRESS = ("0.0.0.0", 5300)
-BLOCKLIST_PATH = "blocklists/malware.txt"
+CONFIG = json.load(open('config.json'))
+UPSTREAM_DNS = tuple(CONFIG['upstream_dns'])
+LISTEN_ADDRESS = tuple(CONFIG['listen_address'])
+BLOCKLIST_PATH = CONFIG['blocklist_path']
+
+# Setup logging
+logging.basicConfig(filename='logs/proxy.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def load_blocklist():
@@ -17,8 +24,10 @@ def load_blocklist():
 
 
 BLOCKLIST = load_blocklist()
-init_db()
-print(f"Loaded {len(BLOCKLIST)} blocked domains.")
+init_db(CONFIG['database_path'])
+CACHE = {}  # domain -> (response_bytes, timestamp)
+CACHE_TTL = CONFIG['cache_ttl']
+CACHE_MAX_SIZE = CONFIG['cache_max_size']
 
 
 def is_blocked(domain):
@@ -44,8 +53,9 @@ while True:
 
         if is_blocked(domain):
             print(f"[BLOCKED] {addr[0]} → {domain}")
+            logging.info(f"BLOCKED: {addr[0]} -> {domain}")
 
-            log_query(addr[0], domain, True)
+            log_query(addr[0], domain, True, CONFIG['database_path'])
 
             reply = request.reply()
             reply.header.rcode = RCODE.NXDOMAIN
@@ -53,7 +63,15 @@ while True:
             sock.sendto(reply.pack(), addr)
             continue
 
-        log_query(addr[0], domain, False)
+        log_query(addr[0], domain, False, CONFIG['database_path'])
+
+        # Check cache
+        if domain in CACHE and time.time() - CACHE[domain][1] < CACHE_TTL:
+            print(f"[CACHE HIT] {addr[0]} → {domain}")
+            logging.info(f"CACHE HIT: {addr[0]} -> {domain}")
+            response = CACHE[domain][0]
+            sock.sendto(response, addr)
+            continue
 
         upstream_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         upstream_sock.settimeout(3)
@@ -62,8 +80,18 @@ while True:
         try:
             response, _ = upstream_sock.recvfrom(512)
             sock.sendto(response, addr)
+            
+            # Cache the response
+            CACHE[domain] = (response, time.time())
+            # Limit cache size
+            if len(CACHE) > CACHE_MAX_SIZE:
+                # Remove oldest entries (simple FIFO)
+                oldest = min(CACHE, key=lambda k: CACHE[k][1])
+                del CACHE[oldest]
+                
         except socket.timeout:
             print(f"[TIMEOUT] {addr[0]} → {domain}")
+            logging.warning(f"TIMEOUT: {addr[0]} -> {domain}")
             reply = request.reply()
             reply.header.rcode = RCODE.SERVFAIL
             sock.sendto(reply.pack(), addr)
