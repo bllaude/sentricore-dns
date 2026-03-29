@@ -38,6 +38,59 @@ The runners automatically use the virtual environment's Python, so no need to ac
 
 3. Open http://127.0.0.1:5000 in your browser to view the dashboard.
 
+## Raspberry Pi Deployment
+
+Deploy Sentricore DNS Proxy as a permanent systemd service on Raspberry Pi.
+
+### Quick Installation
+
+1. Clone or download the repository to your Raspberry Pi
+2. Run the installation script with sudo:
+
+```bash
+sudo bash install.sh
+```
+
+The script will:
+- Install system dependencies (python3, python3-venv, git)
+- Create a `sentricore` system user
+- Set up Python virtual environment
+- Install Python dependencies
+- Create systemd services for auto-start on boot
+- Start the DNS proxy and web dashboard
+
+### Service Management
+
+After installation, manage services with systemctl:
+
+```bash
+# View service status
+sudo systemctl status sentricore-dns-proxy.service
+sudo systemctl status sentricore-dns-web.service
+
+# Start/stop/restart
+sudo systemctl start sentricore-dns-proxy.service
+sudo systemctl stop sentricore-dns-proxy.service
+sudo systemctl restart sentricore-dns-proxy.service
+
+# View logs
+sudo journalctl -u sentricore-dns-proxy.service -f
+sudo journalctl -u sentricore-dns-web.service -f
+
+# Disable auto-start
+sudo systemctl disable sentricore-dns-proxy.service
+sudo systemctl disable sentricore-dns-web.service
+```
+
+### Network Configuration
+
+Once running on Raspberry Pi:
+- **DNS Proxy**: Listens on port 5300 (UDP)
+- **Web Dashboard**: Accessible at `http://<pi-ip>:5000`
+- **Health Check**: `curl http://<pi-ip>:5000/healthz`
+
+To use the DNS proxy from other devices, point their DNS server to the Raspberry Pi's IP address.
+
 ## Testing
 
 Run the test suite with coverage:

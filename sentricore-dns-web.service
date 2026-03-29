@@ -1,0 +1,18 @@
+[Unit]
+Description=Sentricore DNS Web Dashboard
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=sentricore
+WorkingDirectory=/opt/sentricore-dns
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/opt/sentricore-dns/venv/bin/python -m flask --app app.web.app run --host 0.0.0.0 --port 5000
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
