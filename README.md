@@ -91,6 +91,68 @@ Once running on Raspberry Pi:
 
 To use the DNS proxy from other devices, point their DNS server to the Raspberry Pi's IP address.
 
+## Docker Deployment
+
+Deploy Sentricore DNS Proxy using Docker for consistent, portable environments.
+
+### Build and Run with Docker Compose
+
+1. Build the image and start the services:
+
+```bash
+docker-compose up -d
+```
+
+2. The services will be available at:
+   - **DNS Proxy**: `127.0.0.1:5300` (UDP)
+   - **Web Dashboard**: `http://127.0.0.1:5000`
+   - **Health Check**: `curl http://127.0.0.1:5000/healthz`
+
+3. View logs:
+
+```bash
+docker-compose logs -f sentricore-dns
+```
+
+4. Stop the services:
+
+```bash
+docker-compose down
+```
+
+### Using Docker Run
+
+1. Build the image:
+
+```bash
+docker build -t sentricore-dns:latest .
+```
+
+2. Run the container:
+
+```bash
+docker run -d \
+  --name sentricore-dns \
+  -p 5300:5300/udp \
+  -p 5000:5000/tcp \
+  -v ./data:/app/data \
+  -v ./logs:/app/logs \
+  -v ./blocklists:/app/blocklists \
+  -v ./config.json:/app/config.json:ro \
+  --restart unless-stopped \
+  sentricore-dns:latest
+```
+
+### Docker Compose with External Network
+
+To use the proxy from other containers or hosts:
+
+```bash
+docker-compose up -d
+# Access from another container at: sentricore-dns:5300 (UDP)
+# Access from host at: 127.0.0.1:5300 or 192.168.x.x:5300
+```
+
 ## Testing
 
 Run the test suite with coverage:
@@ -98,6 +160,28 @@ Run the test suite with coverage:
 ```bash
 bash run_tests.sh
 ```
+
+Or with pytest directly:
+
+```bash
+python -m pytest tests/ -v
+python -m pytest tests/ --cov=app --cov-report=html
+```
+
+## CI/CD
+
+This project uses GitHub Actions for automated testing and Docker image building:
+
+- **Tests Workflow** (`.github/workflows/tests.yml`):
+  - Runs on Python 3.11, 3.12, and 3.13
+  - Executes pytest with coverage reporting
+  - Uploads coverage to Codecov
+  - Runs flake8 linting checks
+
+- **Docker Build Workflow** (`.github/workflows/docker.yml`):
+  - Builds Docker image on push to master/tags
+  - Validates Dockerfile syntax
+  - Available for manual Docker image publishing
 
 Or run tests directly:
 
