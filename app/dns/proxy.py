@@ -59,8 +59,14 @@ while True:
         upstream_sock.settimeout(3)
         upstream_sock.sendto(data, UPSTREAM_DNS)
 
-        response, _ = upstream_sock.recvfrom(512)
-        sock.sendto(response, addr)
+        try:
+            response, _ = upstream_sock.recvfrom(512)
+            sock.sendto(response, addr)
+        except socket.timeout:
+            print(f"[TIMEOUT] {addr[0]} → {domain}")
+            reply = request.reply()
+            reply.header.rcode = RCODE.SERVFAIL
+            sock.sendto(reply.pack(), addr)
 
     except Exception as e:
         print("Error:", e)

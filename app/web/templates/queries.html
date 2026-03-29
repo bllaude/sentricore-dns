@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Queries - Sentricore DNS</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .pagination { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>All DNS Queries</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Client IP</th>
+                <th>Domain</th>
+                <th>Blocked</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for query in queries %}
+            <tr>
+                <td>{{ query.timestamp }}</td>
+                <td>{{ query.client_ip }}</td>
+                <td>{{ query.domain }}</td>
+                <td>{{ 'Yes' if query.blocked else 'No' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="?page={{ page - 1 }}">Previous</a>
+        {% endif %}
+        Page {{ page }}
+        {% if (page * per_page) < total %}
+            <a href="?page={{ page + 1 }}">Next</a>
+        {% endif %}
+    </div>
+    
+    <p><a href="/">Back to Dashboard</a></p>
+</body>
+</html>
