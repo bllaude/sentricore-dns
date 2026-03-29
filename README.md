@@ -38,6 +38,22 @@ The runners automatically use the virtual environment's Python, so no need to ac
 
 3. Open http://127.0.0.1:5000 in your browser to view the dashboard.
 
+## Testing
+
+Run the test suite with coverage:
+
+```bash
+bash run_tests.sh
+```
+
+Or run tests directly:
+
+```bash
+pytest tests/ -v
+```
+
+Coverage report is generated in `htmlcov/index.html`
+
 ## Configuration
 
 Settings are configured in `config.json`:
