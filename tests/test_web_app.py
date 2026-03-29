@@ -64,3 +64,83 @@ def test_dashboard_calculates_cache_hit_rate(flask_client, temp_db):
     assert response.status_code == 200
     assert b'75' in response.data  # cache_hits
     assert b'25' in response.data  # cache_misses
+
+
+def test_get_blocklist_empty(flask_client):
+    """Test GET /api/blocklist returns empty list"""
+    response = flask_client.get('/api/blocklist')
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert 'domains' in data
+    assert 'count' in data
+    assert data['count'] == 0
+
+
+def test_add_blocklist_domain(flask_client):
+    """Test POST /api/blocklist adds a domain"""
+    response = flask_client.post('/api/blocklist', 
+                                json={'domain': 'badsite.com'},
+                                content_type='application/json')
+    assert response.status_code == 201
+    data = json.loads(response.data)
+    assert 'added to blocklist' in data['message']
+
+
+def test_add_duplicate_blocklist_domain(flask_client):
+    """Test adding duplicate domain returns 409"""
+    flask_client.post('/api/blocklist',
+                     json={'domain': 'badsite.com'},
+                     content_type='application/json')
+    
+    response = flask_client.post('/api/blocklist',
+                                json={'domain': 'badsite.com'},
+                                content_type='application/json')
+    assert response.status_code == 409
+
+
+def test_add_blocklist_missing_domain(flask_client):
+    """Test POST /api/blocklist without domain field returns 400"""
+    response = flask_client.post('/api/blocklist',
+                                json={},
+                                content_type='application/json')
+    assert response.status_code == 400
+    data = json.loads(response.data)
+    assert 'error' in data
+
+
+def test_get_blocklist_after_adding(flask_client):
+    """Test GET /api/blocklist returns added domains"""
+    flask_client.post('/api/blocklist',
+                     json={'domain': 'evil.com'},
+                     content_type='application/json')
+    flask_client.post('/api/blocklist',
+                     json={'domain': 'malware.com'},
+                     content_type='application/json')
+    
+    response = flask_client.get('/api/blocklist')
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data['count'] == 2
+    domains = [d['domain'] for d in data['domains']]
+    assert 'evil.com' in domains
+    assert 'malware.com' in domains
+
+
+def test_delete_blocklist_domain(flask_client):
+    """Test DELETE /api/blocklist/<domain> removes domain"""
+    flask_client.post('/api/blocklist',
+                     json={'domain': 'removeMe.com'},
+                     content_type='application/json')
+    
+    response = flask_client.delete('/api/blocklist/removeMe.com')
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert 'removed from blocklist' in data['message']
+
+
+def test_delete_nonexistent_domain(flask_client):
+    """Test DELETE nonexistent domain returns 404"""
+    response = flask_client.delete('/api/blocklist/doesnotexist.com')
+    assert response.status_code == 404
+    data = json.loads(response.data)
+    assert 'error' in data

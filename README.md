@@ -71,6 +71,49 @@ Settings are configured in `config.json`:
 
 - HTTP: `GET /healthz` returns `status: ok` and current timestamp
 
-## Blocklists
+## Blocklist Management API
+
+Manage blocked domains dynamically via REST API without restarting.
+
+### GET /api/blocklist
+
+Get all blocked domains.
+
+```bash
+curl http://127.0.0.1:5000/api/blocklist
+```
+
+Response:
+```json
+{
+  "count": 3,
+  "domains": [
+    {"domain": "badsite.com", "source": "api", "added_at": "2026-03-29T..."},
+    {"domain": "evil.com", "source": "api", "added_at": "2026-03-29T..."}
+  ]
+}
+```
+
+### POST /api/blocklist
+
+Add a domain to the blocklist.
+
+```bash
+curl -X POST http://127.0.0.1:5000/api/blocklist \
+  -H "Content-Type: application/json" \
+  -d '{"domain": "newbadsite.com"}'
+```
+
+Response: `201 Created` or `409 Conflict` if already exists
+
+### DELETE /api/blocklist/{domain}
+
+Remove a domain from the blocklist.
+
+```bash
+curl -X DELETE http://127.0.0.1:5000/api/blocklist/newbadsite.com
+```
+
+Response: `200 OK` or `404 Not Found`
 
 Add domains to block in `blocklists/malware.txt`, one per line.

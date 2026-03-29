@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import sqlite3
 import json
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
+from app.models.database import add_blocklist_domain, remove_blocklist_domain, get_blocklist_domains
 
 app = Flask(__name__)
 
@@ -62,6 +63,7 @@ def dashboard():
                          cache_hits=cache_hits,
                          cache_misses=cache_misses,
                          cache_hit_rate=cache_hit_rate)
+
 @app.route('/healthz')
 def healthz():
     return {
@@ -91,3 +93,39 @@ def queries():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.route('/api/blocklist', methods=['GET'])
+def get_blocklist():
+    """Get all blocked domains from the database"""
+    domains = get_blocklist_domains(DB_PATH)
+    return jsonify({'domains': domains, 'count': len(domains)}), 200
+
+
+@app.route('/api/blocklist', methods=['POST'])
+def add_blocklist():
+    """Add a domain to the blocklist"""
+    data = request.get_json()
+    if not data or 'domain' not in data:
+        return jsonify({'error': 'domain field required'}), 400
+    
+    domain = data['domain'].lower().strip()
+    if not domain:
+        return jsonify({'error': 'domain cannot be empty'}), 400
+    
+    success = add_blocklist_domain(domain, DB_PATH)
+    if success:
+        return jsonify({'message': f'Domain {domain} added to blocklist'}), 201
+    else:
+        return jsonify({'error': f'Domain {domain} already in blocklist'}), 409
+
+
+@app.route('/api/blocklist/<domain>', methods=['DELETE'])
+def remove_blocklist(domain):
+    """Remove a domain from the blocklist"""
+    domain = domain.lower().strip()
+    success = remove_blocklist_domain(domain, DB_PATH)
+    
+    if success:
+        return jsonify({'message': f'Domain {domain} removed from blocklist'}), 200
+    else:
+        return jsonify({'error': f'Domain {domain} not found in blocklist'}), 404
