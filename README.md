@@ -183,6 +183,18 @@ This project uses GitHub Actions for automated testing and Docker image building
   - Validates Dockerfile syntax
   - Available for manual Docker image publishing
 
+- **Publish Workflow** (`.github/workflows/publish.yml`):
+  - Builds and pushes Docker image to Docker Hub
+  - Optionally pushes to GHCR if `GHCR_TOKEN` secret is set
+
+### Publish secrets
+
+Set these repository secrets in GitHub Settings:
+
+- `DOCKERHUB_USERNAME` (required for publish)
+- `DOCKERHUB_TOKEN` (Docker Hub personal access token)
+- `GHCR_TOKEN` (optional, if you want push to GitHub Container Registry)
+
 Or run tests directly:
 
 ```bash
