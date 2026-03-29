@@ -17,8 +17,8 @@ def main():
 
     print("Starting Sentricore DNS Web Dashboard...")
 
-    # Start the web app
-    subprocess.run(["venv/bin/python", "app/web/app.py"])
+    # Start the web app using flask CLI
+    subprocess.run(["venv/bin/python", "-m", "flask", "--app", "app.web.app", "run"])
 
 if __name__ == "__main__":
     main()
