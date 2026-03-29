@@ -2,7 +2,7 @@ import socket
 import time
 import json
 import logging
-from app.models.database import init_db, log_query
+from app.models.database import init_db, log_query, inc_metric
 from dnslib import DNSRecord, RCODE
 from datetime import datetime, timezone
 
@@ -56,6 +56,7 @@ while True:
             logging.info(f"BLOCKED: {addr[0]} -> {domain}")
 
             log_query(addr[0], domain, True, CONFIG['database_path'])
+            inc_metric('total_queries', 1, CONFIG['database_path'])
 
             reply = request.reply()
             reply.header.rcode = RCODE.NXDOMAIN
@@ -63,15 +64,19 @@ while True:
             sock.sendto(reply.pack(), addr)
             continue
 
+        inc_metric('total_queries', 1, CONFIG['database_path'])
         log_query(addr[0], domain, False, CONFIG['database_path'])
 
         # Check cache
         if domain in CACHE and time.time() - CACHE[domain][1] < CACHE_TTL:
             print(f"[CACHE HIT] {addr[0]} → {domain}")
             logging.info(f"CACHE HIT: {addr[0]} -> {domain}")
+            inc_metric('cache_hits', 1, CONFIG['database_path'])
             response = CACHE[domain][0]
             sock.sendto(response, addr)
             continue
+
+        inc_metric('cache_misses', 1, CONFIG['database_path'])
 
         upstream_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         upstream_sock.settimeout(3)

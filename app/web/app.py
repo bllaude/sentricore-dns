@@ -38,6 +38,16 @@ def dashboard():
     """)
     top_blocked = cursor.fetchall()
 
+    # Metrics
+    cursor.execute("SELECT key, value FROM metrics")
+    metrics_rows = cursor.fetchall()
+    metrics = {row['key']: row['value'] for row in metrics_rows}
+
+    cache_hits = metrics.get('cache_hits', 0)
+    cache_misses = metrics.get('cache_misses', 0)
+    cache_total = cache_hits + cache_misses
+    cache_hit_rate = (cache_hits / cache_total * 100) if cache_total > 0 else 0
+
     # Recent queries
     cursor.execute("SELECT * FROM queries ORDER BY timestamp DESC LIMIT 50")
     recent_queries = cursor.fetchall()
@@ -48,8 +58,10 @@ def dashboard():
                          total_queries=total_queries, 
                          blocked_queries=blocked_queries, 
                          top_blocked=top_blocked,
-                         recent_queries=recent_queries)
-
+                         recent_queries=recent_queries,
+                         cache_hits=cache_hits,
+                         cache_misses=cache_misses,
+                         cache_hit_rate=cache_hit_rate)
 @app.route('/queries')
 def queries():
     page = request.args.get('page', 1, type=int)

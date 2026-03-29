@@ -26,8 +26,40 @@ def init_db(db_path=None):
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS metrics (
+            key TEXT PRIMARY KEY,
+            value INTEGER
+        )
+    """)
+
+    # Initialize metrics keys
+    for metric in ('cache_hits', 'cache_misses', 'total_queries'):
+        cursor.execute("INSERT OR IGNORE INTO metrics (key, value) VALUES (?, 0)", (metric,))
+
     conn.commit()
     conn.close()
+
+
+def inc_metric(key, amount=1, db_path=None):
+    if db_path is None:
+        db_path = DATA_DIR / "sentricore.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE metrics SET value = value + ? WHERE key = ?", (amount, key))
+    conn.commit()
+    conn.close()
+
+
+def get_metrics(db_path=None):
+    if db_path is None:
+        db_path = DATA_DIR / "sentricore.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT key, value FROM metrics")
+    rows = cursor.fetchall()
+    conn.close()
+    return {k: v for k, v in rows}
 
 
 def log_query(client_ip, domain, blocked, db_path=None):

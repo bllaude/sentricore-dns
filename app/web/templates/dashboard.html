@@ -25,6 +25,18 @@
             <h3>Blocked Queries</h3>
             <p>{{ blocked_queries }}</p>
         </div>
+        <div class="stat">
+            <h3>Cache Hits</h3>
+            <p>{{ cache_hits }}</p>
+        </div>
+        <div class="stat">
+            <h3>Cache Misses</h3>
+            <p>{{ cache_misses }}</p>
+        </div>
+        <div class="stat">
+            <h3>Hit Rate</h3>
+            <p>{{ "%.1f"|format(cache_hit_rate) }}%</p>
+        </div>
     </div>
     
     <h2>Top Blocked Domains</h2>
