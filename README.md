@@ -212,12 +212,26 @@ Settings are configured in `config.json`:
 
 Manage blocked domains dynamically via REST API without restarting.
 
+### API key authentication
+
+If `DASHBOARD_API_KEY` or `SENTRICORE_API_KEY` is set in the environment, API endpoints require authentication using either header or query parameter:
+
+- `X-API-Key: <secret>`
+- `?api_key=<secret>`
+
+Example:
+
+```bash
+curl -H "X-API-Key: ${DASHBOARD_API_KEY}" http://127.0.0.1:5000/api/blocklist
+```
+
 ### GET /api/blocklist
 
 Get all blocked domains.
 
 ```bash
 curl http://127.0.0.1:5000/api/blocklist
+```
 ```
 
 Response:

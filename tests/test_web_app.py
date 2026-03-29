@@ -144,3 +144,33 @@ def test_delete_nonexistent_domain(flask_client):
     assert response.status_code == 404
     data = json.loads(response.data)
     assert 'error' in data
+
+
+def test_blocklist_api_requires_api_key(monkeypatch, flask_client):
+    """When DASHBOARD_API_KEY is set, /api/blocklist requires valid key"""
+    import app.web.app as app_module
+    monkeypatch.setattr(app_module, 'AUTH_API_KEY', 'supersecret')
+
+    # no key -> 401
+    response = flask_client.get('/api/blocklist')
+    assert response.status_code == 401
+
+    # wrong key -> 401
+    response = flask_client.get('/api/blocklist', headers={'X-API-Key': 'badkey'})
+    assert response.status_code == 401
+
+    # correct key -> 200
+    response = flask_client.get('/api/blocklist', headers={'X-API-Key': 'supersecret'})
+    assert response.status_code == 200
+
+
+def test_blocklist_api_can_add_with_api_key(monkeypatch, flask_client):
+    import app.web.app as app_module
+    monkeypatch.setattr(app_module, 'AUTH_API_KEY', 'supersecret')
+
+    response = flask_client.post('/api/blocklist',
+                                 headers={'X-API-Key': 'supersecret'},
+                                 json={'domain': 'badsite.com'},
+                                 content_type='application/json')
+    assert response.status_code == 201
+

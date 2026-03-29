@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
 import json
+import os
+from functools import wraps
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from app.models.database import add_blocklist_domain, remove_blocklist_domain, get_blocklist_domains
@@ -9,6 +11,23 @@ app = Flask(__name__)
 
 CONFIG = json.load(open('config.json'))
 DB_PATH = CONFIG['database_path']
+
+# API key for protecting blocklist endpoints. If not set, endpoints are open (legacy behavior).
+AUTH_API_KEY = os.getenv('DASHBOARD_API_KEY') or os.getenv('SENTRICORE_API_KEY')
+
+def _get_request_api_key():
+    return request.headers.get('X-API-Key') or request.args.get('api_key')
+
+
+def require_api_key(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if AUTH_API_KEY:
+            request_key = _get_request_api_key()
+            if not request_key or request_key != AUTH_API_KEY:
+                return jsonify({'error': 'Unauthorized'}), 401
+        return func(*args, **kwargs)
+    return wrapper
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -95,6 +114,7 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 @app.route('/api/blocklist', methods=['GET'])
+@require_api_key
 def get_blocklist():
     """Get all blocked domains from the database"""
     domains = get_blocklist_domains(DB_PATH)
@@ -102,6 +122,7 @@ def get_blocklist():
 
 
 @app.route('/api/blocklist', methods=['POST'])
+@require_api_key
 def add_blocklist():
     """Add a domain to the blocklist"""
     data = request.get_json()
@@ -120,6 +141,7 @@ def add_blocklist():
 
 
 @app.route('/api/blocklist/<domain>', methods=['DELETE'])
+@require_api_key
 def remove_blocklist(domain):
     """Remove a domain from the blocklist"""
     domain = domain.lower().strip()
