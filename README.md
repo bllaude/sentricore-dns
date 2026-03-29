@@ -45,9 +45,15 @@ Settings are configured in `config.json`:
 - `upstream_dns`: Upstream DNS server [IP, port]
 - `listen_address`: Proxy listen address [IP, port]
 - `blocklist_path`: Path to blocklist file
+- `blocklist_sources`: Array of blocklist paths or URLs
+- `blocklist_update_interval`: Seconds between automatic blocklist reloads
 - `cache_ttl`: DNS cache TTL in seconds
 - `cache_max_size`: Maximum cache entries
 - `database_path`: Path to SQLite database
+
+## Health check
+
+- HTTP: `GET /healthz` returns `status: ok` and current timestamp
 
 ## Blocklists
 

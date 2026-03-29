@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 import sqlite3
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 
@@ -62,6 +62,14 @@ def dashboard():
                          cache_hits=cache_hits,
                          cache_misses=cache_misses,
                          cache_hit_rate=cache_hit_rate)
+@app.route('/healthz')
+def healthz():
+    return {
+        'status': 'ok',
+        'time': datetime.now(timezone.utc).isoformat()
+    }, 200
+
+
 @app.route('/queries')
 def queries():
     page = request.args.get('page', 1, type=int)

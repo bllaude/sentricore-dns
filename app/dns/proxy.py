@@ -2,6 +2,8 @@ import socket
 import time
 import json
 import logging
+import signal
+import urllib.request
 from app.models.database import init_db, log_query, inc_metric
 from dnslib import DNSRecord, RCODE
 from datetime import datetime, timezone
@@ -10,17 +12,35 @@ CONFIG = json.load(open('config.json'))
 UPSTREAM_DNS = tuple(CONFIG['upstream_dns'])
 LISTEN_ADDRESS = tuple(CONFIG['listen_address'])
 BLOCKLIST_PATH = CONFIG['blocklist_path']
+BLOCKLIST_SOURCES = CONFIG.get('blocklist_sources', [BLOCKLIST_PATH])
+BLOCKLIST_UPDATE_INTERVAL = CONFIG.get('blocklist_update_interval', 300)
 
 # Setup logging
 logging.basicConfig(filename='logs/proxy.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def load_blocklist():
-    try:
-        with open(BLOCKLIST_PATH, "r") as f:
-            return set(line.strip().lower() for line in f if line.strip())
-    except FileNotFoundError:
-        return set()
+    domains = set()
+    for entry in BLOCKLIST_SOURCES:
+        try:
+            if entry.startswith('http://') or entry.startswith('https://'):
+                with urllib.request.urlopen(entry, timeout=10) as resp:
+                    text = resp.read().decode('utf-8', errors='ignore')
+                source_domains = {line.strip().lower() for line in text.splitlines() if line.strip()}
+                domains.update(source_domains)
+            else:
+                with open(entry, 'r') as f:
+                    source_domains = {line.strip().lower() for line in f if line.strip()}
+                domains.update(source_domains)
+        except Exception as e:
+            logging.warning(f"Could not load blocklist source {entry}: {e}")
+    return domains
+
+
+def reload_blocklist():
+    global BLOCKLIST
+    BLOCKLIST = load_blocklist()
+    logging.info(f"Loaded {len(BLOCKLIST)} blocked domains from sources")
 
 
 BLOCKLIST = load_blocklist()
@@ -28,6 +48,7 @@ init_db(CONFIG['database_path'])
 CACHE = {}  # domain -> (response_bytes, timestamp)
 CACHE_TTL = CONFIG['cache_ttl']
 CACHE_MAX_SIZE = CONFIG['cache_max_size']
+LAST_BLOCKLIST_RELOAD = time.time()
 
 
 def is_blocked(domain):
@@ -42,12 +63,35 @@ sock.bind(LISTEN_ADDRESS)
 
 print("Sentricore DNS Proxy running on port 5300...")
 
+
+def cleanup_and_exit(signum, frame):
+    print("Shutting down Sentricore DNS Proxy...")
+    logging.info("Shutting down Sentricore DNS Proxy...")
+    try:
+        sock.close()
+    except Exception:
+        pass
+    exit(0)
+
+signal.signal(signal.SIGINT, cleanup_and_exit)
+signal.signal(signal.SIGTERM, cleanup_and_exit)
+
+
+def maybe_reload_blocklist():
+    global LAST_BLOCKLIST_RELOAD
+    if time.time() - LAST_BLOCKLIST_RELOAD > BLOCKLIST_UPDATE_INTERVAL:
+        reload_blocklist()
+        LAST_BLOCKLIST_RELOAD = time.time()
+
 while True:
     try:
         data, addr = sock.recvfrom(512)
 
         request = DNSRecord.parse(data)
         domain = str(request.q.qname).rstrip(".").lower()
+
+        # Periodically reload blocklist from sources
+        maybe_reload_blocklist()
 
         print(f"[{datetime.now(timezone.utc)}] {addr[0]} → {domain}")
 
