@@ -5,7 +5,7 @@ import os
 from functools import wraps
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
-from app.models.database import add_blocklist_domain, remove_blocklist_domain, get_blocklist_domains
+from app.models.database import add_blocklist_domain, remove_blocklist_domain, get_blocklist_domains, get_metrics
 
 app = Flask(__name__)
 
@@ -89,6 +89,51 @@ def healthz():
         'status': 'ok',
         'time': datetime.now(timezone.utc).isoformat()
     }, 200
+
+
+@app.route('/metrics')
+def metrics():
+    """Expose metrics in Prometheus text format"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Query counts
+    cursor.execute("SELECT COUNT(*) as total FROM queries")
+    total_queries = cursor.fetchone()['total']
+    
+    cursor.execute("SELECT COUNT(*) as blocked FROM queries WHERE blocked = 1")
+    blocked_queries = cursor.fetchone()['blocked']
+    
+    # Metrics from metrics table
+    app_metrics = get_metrics(DB_PATH)
+    cache_hits = app_metrics.get('cache_hits', 0)
+    cache_misses = app_metrics.get('cache_misses', 0)
+    
+    # Blocklist size
+    cursor.execute("SELECT COUNT(*) as count FROM blocklist")
+    blocklist_size = cursor.fetchone()['count']
+    
+    conn.close()
+
+    # Format as Prometheus text format
+    prometheus_output = """# HELP sentricore_total_queries Total DNS queries processed
+# TYPE sentricore_total_queries counter
+sentricore_total_queries {0}
+# HELP sentricore_blocked_queries Total blocked queries
+# TYPE sentricore_blocked_queries counter
+sentricore_blocked_queries {1}
+# HELP sentricore_cache_hits Total cache hits
+# TYPE sentricore_cache_hits counter
+sentricore_cache_hits {2}
+# HELP sentricore_cache_misses Total cache misses
+# TYPE sentricore_cache_misses counter
+sentricore_cache_misses {3}
+# HELP sentricore_blocklist_size Current blocklist domain count
+# TYPE sentricore_blocklist_size gauge
+sentricore_blocklist_size {4}
+""".format(total_queries, blocked_queries, cache_hits, cache_misses, blocklist_size)
+    
+    return prometheus_output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @app.route('/queries')

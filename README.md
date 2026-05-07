@@ -220,6 +220,45 @@ Settings are configured in `config.json`:
 
 - HTTP: `GET /healthz` returns `status: ok` and current timestamp
 
+## Metrics
+
+Sentricore DNS Proxy exposes operational metrics in Prometheus text format on the `/metrics` endpoint.
+
+### Prometheus metrics endpoint
+
+```bash
+curl http://127.0.0.1:5000/metrics
+```
+
+**Available metrics:**
+
+- `sentricore_total_queries` — Total DNS queries processed (counter)
+- `sentricore_blocked_queries` — Total blocked queries (counter)
+- `sentricore_cache_hits` — Total cache hits (counter)
+- `sentricore_cache_misses` — Total cache misses (counter)
+- `sentricore_blocklist_size` — Current blocklist domain count (gauge)
+
+### Prometheus + Grafana setup
+
+1. Add Sentricore DNS to `prometheus.yml`:
+
+```yaml
+scrape_configs:
+  - job_name: 'sentricore-dns'
+    static_configs:
+      - targets: ['127.0.0.1:5000']
+```
+
+2. Reload Prometheus and create dashboards in Grafana.
+
+Example query:
+
+```promql
+rate(sentricore_total_queries[5m])  # QPS over last 5 minutes
+rate(sentricore_blocked_queries[5m])  # Blocked queries per second
+sentricore_cache_hits / (sentricore_cache_hits + sentricore_cache_misses)  # Cache hit ratio
+```
+
 ## Blocklist Management API
 
 Manage blocked domains dynamically via REST API without restarting.

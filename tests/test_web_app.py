@@ -174,3 +174,27 @@ def test_blocklist_api_can_add_with_api_key(monkeypatch, flask_client):
                                  content_type='application/json')
     assert response.status_code == 201
 
+
+def test_metrics_endpoint(flask_client, temp_db):
+    """Test /metrics returns Prometheus format metrics"""
+    # Add some test data
+    log_query('192.168.1.1', 'example.com', False, temp_db)
+    log_query('192.168.1.2', 'bad.com', True, temp_db)
+    inc_metric('cache_hits', 5, temp_db)
+    inc_metric('cache_misses', 2, temp_db)
+    
+    response = flask_client.get('/metrics')
+    
+    assert response.status_code == 200
+    assert response.content_type == 'text/plain; charset=utf-8'
+    data = response.data.decode('utf-8')
+    
+    # Verify Prometheus format markers
+    assert '# HELP sentricore_total_queries' in data
+    assert '# TYPE sentricore_total_queries counter' in data
+    assert 'sentricore_total_queries 2' in data
+    assert 'sentricore_blocked_queries 1' in data
+    assert 'sentricore_cache_hits 5' in data
+    assert 'sentricore_cache_misses 2' in data
+
+
