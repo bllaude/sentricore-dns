@@ -8,7 +8,7 @@ Type=simple
 User=sentricore
 WorkingDirectory=/opt/sentricore-dns
 Environment="PYTHONUNBUFFERED=1"
-ExecStart=/opt/sentricore-dns/venv/bin/python app/dns/proxy.py
+ExecStart=/opt/sentricore-dns/venv/bin/python -m app.dns.proxy
 Restart=always
 RestartSec=10
 StandardOutput=journal

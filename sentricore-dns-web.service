@@ -8,7 +8,7 @@ Type=simple
 User=sentricore
 WorkingDirectory=/opt/sentricore-dns
 Environment="PYTHONUNBUFFERED=1"
-ExecStart=/opt/sentricore-dns/venv/bin/python -m flask --app app.web.app run --host 0.0.0.0 --port 5000
+ExecStart=/opt/sentricore-dns/venv/bin/gunicorn --bind 0.0.0.0:5000 --workers 2 app.web.app:app
 Restart=always
 RestartSec=10
 StandardOutput=journal

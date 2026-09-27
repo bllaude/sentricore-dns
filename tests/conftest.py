@@ -1,10 +1,29 @@
-import pytest
+import os
 import tempfile
 import json
-import os
 from pathlib import Path
-from app.models.database import init_db
-from app.web.app import app as flask_app
+
+import pytest
+
+from app.models.database import init_db, close_all_connections
+
+
+@pytest.fixture(autouse=True)
+def _api_key_setup(monkeypatch):
+    """Tests exercise the legacy open-API behavior by default: no key is
+    configured and writes are allowed.  Auth-specific tests set the key or
+    toggle DENY_WRITES_WITHOUT_KEY explicitly via app.config/monkeypatch."""
+    monkeypatch.delenv('SENTRICORE_API_KEY', raising=False)
+    monkeypatch.delenv('DASHBOARD_API_KEY', raising=False)
+    import app.web.app as app_module
+    monkeypatch.setattr(app_module, 'DENY_WRITES_WITHOUT_KEY', False)
+    yield
+
+
+@pytest.fixture(autouse=True)
+def _clean_db_connections():
+    yield
+    close_all_connections()
 
 
 @pytest.fixture
@@ -14,7 +33,11 @@ def temp_db():
         db_path = f.name
     init_db(db_path)
     yield db_path
-    os.unlink(db_path)
+    for suffix in ('', '-wal', '-shm'):
+        try:
+            os.unlink(db_path + suffix)
+        except OSError:
+            pass
 
 
 @pytest.fixture
@@ -22,7 +45,7 @@ def temp_config(temp_db):
     """Create a temporary config file for testing"""
     config = {
         "upstream_dns": ["1.1.1.1", 53],
-        "listen_address": ["0.0.0.0", 5300],
+        "listen_address": ["127.0.0.1", 0],
         "blocklist_path": "blocklists/malware.txt",
         "blocklist_sources": ["blocklists/malware.txt"],
         "blocklist_update_interval": 300,
@@ -40,20 +63,12 @@ def temp_config(temp_db):
 @pytest.fixture
 def flask_client(monkeypatch, temp_db):
     """Create a Flask test client with temp database"""
-    # Mock the config to use temp database
-    mock_config = {
-        'database_path': temp_db
-    }
-    
-    # Patch the CONFIG in the Flask app module
     import app.web.app as app_module
-    original_db_path = app_module.DB_PATH
-    app_module.DB_PATH = temp_db
-    
-    flask_app.config['TESTING'] = True
-    
-    with flask_app.test_client() as client:
+
+    monkeypatch.setattr(app_module, 'DB_PATH', temp_db)
+    monkeypatch.setitem(app_module.CONFIG, 'database_path', temp_db)
+
+    app_module.app.config['TESTING'] = True
+
+    with app_module.app.test_client() as client:
         yield client
-    
-    # Restore original
-    app_module.DB_PATH = original_db_path
