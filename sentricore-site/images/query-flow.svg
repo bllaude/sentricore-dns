@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 380" width="560" height="380" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 10 5 0 10z" fill="#22d3ee"/>
+    </marker>
+    <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 10 5 0 10z" fill="#f87171"/>
+    </marker>
+    <style>
+      .stage { fill:#131c31; stroke:#24304d; stroke-width:1.5; }
+      .t { fill:#e2e8f0; font-size:14px; font-weight:600; }
+      .s { fill:#94a3b8; font-size:11px; }
+      .ar { stroke:#22d3ee; stroke-width:2; fill:none; marker-end:url(#arr2); }
+      .bad { stroke:#f87171; stroke-width:2; fill:none; marker-end:url(#arr3); }
+    </style>
+  </defs>
+
+  <!-- Query in -->
+  <rect class="stage" x="180" y="14" width="200" height="46" rx="10"/>
+  <text class="t" x="280" y="34" text-anchor="middle">DNS query (UDP :5300)</text>
+  <text class="s" x="280" y="50" text-anchor="middle">from any client on your network</text>
+  <path class="ar" d="M280 60 V84"/>
+
+  <!-- Rate limiter -->
+  <rect class="stage" x="180" y="88" width="200" height="46" rx="10"/>
+  <text class="t" x="280" y="108" text-anchor="middle">1 · Token-bucket rate limit</text>
+  <text class="s" x="280" y="124" text-anchor="middle">50 QPS sustained · burst 100 / client IP</text>
+  <path class="ar" d="M280 134 V158"/>
+  <path class="bad" d="M380 111 H470"/>
+  <text class="s" x="474" y="108" fill="#f87171">over limit →</text>
+  <text class="s" x="474" y="122" fill="#f87171">dropped</text>
+
+  <!-- Cache -->
+  <rect class="stage" x="180" y="162" width="200" height="46" rx="10"/>
+  <text class="t" x="280" y="182" text-anchor="middle">2 · LRU cache lookup</text>
+  <text class="s" x="280" y="198" text-anchor="middle">TTL 300 s · max 10 000 entries</text>
+  <path class="ar" d="M280 208 V232"/>
+  <path class="ar" d="M180 185 H70 V352 H240"/>
+  <text class="s" x="60" y="240" fill="#34d399">hit: answer &lt;5 ms</text>
+
+  <!-- Blocklist -->
+  <rect class="stage" x="180" y="236" width="200" height="46" rx="10"/>
+  <text class="t" x="280" y="256" text-anchor="middle">3 · Blocklist screen</text>
+  <text class="s" x="280" y="272" text-anchor="middle">merged feeds · hot reload every 300 s</text>
+  <path class="ar" d="M280 282 V306"/>
+  <path class="bad" d="M380 259 H470"/>
+  <text class="s" x="474" y="256" fill="#f87171">blocked →</text>
+  <text class="s" x="474" y="270" fill="#f87171">sinkholed 0.0.0.0</text>
+
+  <!-- Forward -->
+  <rect class="stage" x="180" y="310" width="200" height="46" rx="10"/>
+  <text class="t" x="280" y="330" text-anchor="middle">4 · Forward + record</text>
+  <text class="s" x="280" y="346" text-anchor="middle">upstream resolver · SQLite batch write · metrics</text>
+</svg>

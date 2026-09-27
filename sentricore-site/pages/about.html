@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Sentricore DNS</title>
+  <meta name="description" content="Why Sentricore DNS exists: a small open-source project defending the first packet of every connection — the DNS lookup.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / About</p>
+      <h1>About Sentricore</h1>
+      <p>We defend the first packet of every connection: the DNS lookup.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container narrow prose">
+      <h2>The story</h2>
+      <p>
+        Sentricore started as one maintainer's Raspberry Pi running a weekend
+        Python script that answered <code>0.0.0.0</code> for malware domains seen
+        in the news. It blocked so much junk that it became the household resolver
+        overnight — and then the requests started: caching, rate limits, a dashboard
+        the family could look at, metrics that Grafana could scrape.
+      </p>
+      <p>
+        Each feature was pulled into the open, tested, and shipped. Today Sentricore
+        DNS is a small, boring, dependable stack — <code>dnslib</code>, Flask, SQLite —
+        that does what enterprise resolvers do, on hardware you already own, with data
+        nobody else can see.
+      </p>
+
+      <h2>What we believe</h2>
+      <ul>
+        <li><strong>Privacy is architecture.</strong> If your resolver isn't on your network, your browsing history is someone else's product.</li>
+        <li><strong>Boring beats clever.</strong> One process, plain files, no microservices. You should be able to read every line that touches your traffic.</li>
+        <li><strong>Security tools must be observable.</strong> A block that reports nothing is a rumor. Everything gets logged, counted, and exported.</li>
+        <li><strong>Open source is the trust layer.</strong> MIT license, public CI, reproducible containers.</li>
+      </ul>
+
+      <h2>The numbers (today)</h2>
+      <ul class="hero-stats">
+        <li><strong>1 repo</strong><span>Python + Flask + SQLite</span></li>
+        <li><strong>5 metrics</strong><span>exposed to Prometheus</span></li>
+        <li><strong>3 deploy paths</strong><span>Docker · systemd · bare metal</span></li>
+        <li><strong>$0</strong><span>to run it all</span></li>
+      </ul>
+
+      <h2>Get involved</h2>
+      <p>Issues, pull requests, and blocklist feedback are how this project grows. Start at <a href="https://github.com/SentriCore/sentricore-dns-proxy">github.com/SentriCore/sentricore-dns-proxy</a> or read the <a href="docs.html">docs</a>.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>

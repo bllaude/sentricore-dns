@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capabilities — Sentricore DNS</title>
+  <meta name="description" content="Full capability matrix for Sentricore DNS: blocking, caching, rate limiting, logging, observability, API control, and deployment options.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html" class="active">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / Capabilities</p>
+      <h1>Every capability, in one binary-sized project</h1>
+      <p>Sentricore DNS keeps the DNS path simple and the control plane honest. Here is exactly what ships today — nothing vaporware, everything in the repo.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container narrow prose">
+      <h2 id="blocking">Domain blocking</h2>
+      <table>
+        <tr><th>Capability</th><th>Detail</th></tr>
+        <tr><td>Multiple sources</td><td>Any number of local files or URLs in <code>blocklist_sources</code>, merged at load time.</td></tr>
+        <tr><td>Format tolerance</td><td>Plain domain-per-line lists <em>and</em> ad-block hosts format (<code>0.0.0.0 domain</code>) are normalized automatically.</td></tr>
+        <tr><td>Hot reload</td><td>Lists refresh every <code>blocklist_update_interval</code> seconds (default 300) with zero downtime.</td></tr>
+        <tr><td>Sinkholing</td><td>Matched queries answer <code>0.0.0.0</code> with a short TTL and are counted in <code>sentricore_blocked_queries</code>.</td></tr>
+        <tr><td>Dynamic entries</td><td>Add/remove domains at runtime via the REST API; changes persist to SQLite.</td></tr>
+      </table>
+
+      <h2 id="performance">Performance &amp; resilience</h2>
+      <table>
+        <tr><th>Capability</th><th>Detail</th></tr>
+        <tr><td>LRU cache</td><td>Up to 10,000 responses with configurable TTL; hits answered in single-digit milliseconds.</td></tr>
+        <tr><td>Token-bucket rate limiting</td><td>Per-client-IP sustained QPS (default 50) plus burst allowance (default 100).</td></tr>
+        <tr><td>Batched persistence</td><td>Query logs and metrics flush to SQLite on an interval (default 1 s) instead of per-query writes.</td></tr>
+        <tr><td>Configurable upstream</td><td>Point at any resolver — Cloudflare, Quad9, your Pi-hole, or your enterprise forwarder.</td></tr>
+      </table>
+
+      <h2 id="observability">Observability</h2>
+      <table>
+        <tr><th>Capability</th><th>Detail</th></tr>
+        <tr><td>Web dashboard</td><td>Flask app with overview page, query history, and health endpoint.</td></tr>
+        <tr><td>Prometheus metrics</td><td><code>/metrics</code> exposes total queries, blocked queries, cache hits/misses, and blocklist size.</td></tr>
+        <tr><td>Grafana-ready</td><td>Standard counter semantics make QPS and hit-ratio expressions trivial.</td></tr>
+        <tr><td>File logging</td><td>Structured proxy log with configurable level for journald/file tailing.</td></tr>
+      </table>
+
+      <h2 id="security">Security posture</h2>
+      <table>
+        <tr><th>Capability</th><th>Detail</th></tr>
+        <tr><td>API-key auth</td><td>Write endpoints require <code>X-API-Key</code> or <code>?api_key=</code> when a secret is configured.</td></tr>
+        <tr><td>Secure defaults</td><td>Writes are <strong>denied by default</strong> if no API key is set.</td></tr>
+        <tr><td>Local-first data</td><td>All history stays in your SQLite file. No outbound telemetry, ever.</td></tr>
+        <tr><td>Amplification defense</td><td>Rate limiting caps per-client query volume, blunting abuse from compromised hosts.</td></tr>
+      </table>
+
+      <h2 id="deployment">Deployment</h2>
+      <table>
+        <tr><th>Capability</th><th>Detail</th></tr>
+        <tr><td>Docker / Compose</td><td>Multi-stage image; compose file runs proxy + web as separate services.</td></tr>
+        <tr><td>systemd</td><td>Unit files and a Raspberry Pi installer script register both services on boot.</td></tr>
+        <tr><td>Bare metal</td><td>Plain Python 3.11+ with <code>dnslib</code>, <code>Flask</code>, <code>gunicorn</code>.</td></tr>
+        <tr><td>CI/CD</td><td>GitHub Actions run tests, lint, coverage, and publish Docker images.</td></tr>
+      </table>
+
+      <p class="more-line"><a class="btn btn-primary" href="getting-started.html">Try it now →</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>

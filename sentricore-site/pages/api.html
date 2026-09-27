@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REST API Reference — Sentricore DNS</title>
+  <meta name="description" content="Sentricore DNS REST API: blocklist management endpoints, authentication, dashboard routes, health checks, and Prometheus metrics.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / API reference</p>
+      <h1>REST API reference</h1>
+      <p>The web service (default <code>http://127.0.0.1:5000</code>) exposes a small, boring, well-behaved JSON API for blocklist control plus human and machine observability routes.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container narrow prose">
+      <h2 id="auth">Authentication</h2>
+      <p>If <code>SENTRICORE_API_KEY</code> or <code>DASHBOARD_API_KEY</code> is set on the server, protected endpoints require the secret via either:</p>
+<pre class="codeblock"><code>X-API-Key: &lt;secret&gt;        # preferred header
+?api_key=&lt;secret&gt;          # query parameter fallback</code></pre>
+      <p class="callout-warn callout"><strong>Secure by default:</strong> write endpoints are rejected when no API key is configured. Set <code>SENTRICORE_DENY_WRITES_WITHOUT_KEY=0</code> only if you know what you are doing.</p>
+
+      <h2 id="blocklist">Blocklist management</h2>
+
+      <div class="endpoint">
+        <span class="method method-get">GET</span><h3>/api/blocklist</h3>
+        <p>List every blocked domain with its source and insertion time.</p>
+<pre class="codeblock"><code>curl -H "X-API-Key: $SENTRICORE_API_KEY" \
+  http://127.0.0.1:5000/api/blocklist</code></pre>
+<pre class="codeblock"><code>{
+  "count": 2,
+  "domains": [
+    {"domain": "badsite.com", "source": "api", "added_at": "2026-03-29T10:12:44Z"},
+    {"domain": "evil.com",    "source": "api", "added_at": "2026-03-29T10:13:02Z"}
+  ]
+}</code></pre>
+      </div>
+
+      <div class="endpoint">
+        <span class="method method-post">POST</span><h3>/api/blocklist</h3>
+        <p>Add a domain to the blocklist. Persisted to SQLite and applied immediately.</p>
+<pre class="codeblock"><code>curl -X POST http://127.0.0.1:5000/api/blocklist \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $SENTRICORE_API_KEY" \
+  -d '{"domain": "malware.example"}'</code></pre>
+<pre class="codeblock"><code>{"status": "ok", "domain": "malware.example", "count": 3}</code></pre>
+      </div>
+
+      <div class="endpoint">
+        <span class="method method-delete">DELETE</span><h3>/api/blocklist/&lt;domain&gt;</h3>
+        <p>Remove a previously added domain.</p>
+<pre class="codeblock"><code>curl -X DELETE http://127.0.0.1:5000/api/blocklist/malware.example \
+  -H "X-API-Key: $SENTRICORE_API_KEY"</code></pre>
+<pre class="codeblock"><code>{"status": "ok", "removed": "malware.example", "count": 2}</code></pre>
+      </div>
+
+      <h2 id="observability-routes">Observability routes</h2>
+      <table>
+        <tr><th>Route</th><th>Method</th><th>Purpose</th></tr>
+        <tr><td><code>/</code></td><td>GET</td><td>Dashboard overview (HTML).</td></tr>
+        <tr><td><code>/queries</code></td><td>GET</td><td>Recent query history (HTML).</td></tr>
+        <tr><td><code>/healthz</code></td><td>GET</td><td>Liveness probe — <code>{"status":"ok","timestamp":...}</code>.</td></tr>
+        <tr><td><code>/metrics</code></td><td>GET</td><td>Prometheus text-format exposition.</td></tr>
+      </table>
+
+      <h2 id="metrics-list">Exported metrics</h2>
+      <table>
+        <tr><th>Metric</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>sentricore_total_queries</code></td><td>counter</td><td>Total DNS queries processed.</td></tr>
+        <tr><td><code>sentricore_blocked_queries</code></td><td>counter</td><td>Queries sinkholed by blocklist match.</td></tr>
+        <tr><td><code>sentricore_cache_hits</code></td><td>counter</td><td>Answers served from the LRU cache.</td></tr>
+        <tr><td><code>sentricore_cache_misses</code></td><td>counter</td><td>Lookups that required upstream forwarding.</td></tr>
+        <tr><td><code>sentricore_blocklist_size</code></td><td>gauge</td><td>Current number of blocked domains.</td></tr>
+      </table>
+      <h3>Example PromQL</h3>
+<pre class="codeblock"><code>rate(sentricore_total_queries[5m])                       # QPS
+rate(sentricore_blocked_queries[5m])                     # blocks/sec
+sentricore_cache_hits / (sentricore_cache_hits + sentricore_cache_misses)  # hit ratio</code></pre>
+
+      <p class="more-line"><a href="docs.html">← Back to docs</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>

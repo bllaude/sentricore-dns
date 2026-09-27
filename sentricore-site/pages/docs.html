@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation — Sentricore DNS</title>
+  <meta name="description" content="Sentricore DNS documentation: configuration reference, environment variables, endpoints, metrics, and blocklist management.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / Documentation</p>
+      <h1>Documentation</h1>
+      <p>Everything you can configure, in one page. The authoritative source lives in the repo's README; this mirrors it for reading comfort.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container narrow prose">
+      <h2 id="requirements">Requirements</h2>
+      <ul>
+        <li>Python 3.11+</li>
+        <li>Dependencies: <code>dnslib</code>, <code>Flask</code>, <code>gunicorn</code> (see <code>requirements.txt</code>)</li>
+        <li>A free UDP port for the proxy (default <code>5300</code>) and a TCP port for the dashboard (default <code>5000</code>)</li>
+      </ul>
+
+      <h2 id="config">Configuration reference (<code>config.json</code>)</h2>
+      <table>
+        <tr><th>Key</th><th>Description</th></tr>
+        <tr><td><code>upstream_dns</code></td><td>Upstream DNS server <code>[IP, port]</code> (default <code>1.1.1.1:53</code>).</td></tr>
+        <tr><td><code>listen_address</code></td><td>Proxy listen address <code>[IP, port]</code> (default <code>0.0.0.0:5300</code>).</td></tr>
+        <tr><td><code>blocklist_path</code></td><td>Primary blocklist file path.</td></tr>
+        <tr><td><code>blocklist_sources</code></td><td>Array of blocklist paths or URLs, merged on load/reload.</td></tr>
+        <tr><td><code>blocklist_update_interval</code></td><td>Seconds between automatic blocklist reloads.</td></tr>
+        <tr><td><code>cache_ttl</code></td><td>DNS response cache TTL in seconds.</td></tr>
+        <tr><td><code>cache_max_size</code></td><td>Maximum number of cached responses (LRU eviction).</td></tr>
+        <tr><td><code>database_path</code></td><td>Path to the SQLite database.</td></tr>
+        <tr><td><code>log_file</code> / <code>log_level</code></td><td>Proxy log file location and level.</td></tr>
+        <tr><td><code>rate_limit_per_client_qps</code></td><td>Sustained queries-per-second allowed per client IP.</td></tr>
+        <tr><td><code>rate_limit_burst</code></td><td>Token-bucket burst allowance per client IP.</td></tr>
+        <tr><td><code>db_flush_interval</code></td><td>Seconds between batched writes of query logs/metrics to SQLite.</td></tr>
+      </table>
+
+      <h2 id="env">Environment variables (web app)</h2>
+      <table>
+        <tr><th>Variable</th><th>Description</th></tr>
+        <tr><td><code>SENTRICORE_CONFIG</code></td><td>Alternate path to <code>config.json</code>.</td></tr>
+        <tr><td><code>SENTRICORE_DB</code></td><td>Override database path.</td></tr>
+        <tr><td><code>SENTRICORE_API_KEY</code> / <code>DASHBOARD_API_KEY</code></td><td>Shared secret required for write API endpoints.</td></tr>
+        <tr><td><code>SENTRICORE_DENY_WRITES_WITHOUT_KEY</code></td><td>Set to <code>0</code> to allow writes when no API key is configured (default: deny).</td></tr>
+        <tr><td><code>SENTRICORE_WEB_HOST</code> / <code>SENTRICORE_WEB_PORT</code></td><td>Dashboard bind host/port (default <code>127.0.0.1:5000</code>).</td></tr>
+        <tr><td><code>FLASK_DEBUG</code></td><td>Set to <code>1</code> to enable Flask debug mode.</td></tr>
+      </table>
+
+      <h2 id="endpoints">Web endpoints</h2>
+      <table>
+        <tr><th>Route</th><th>Purpose</th></tr>
+        <tr><td><code>GET /</code></td><td>Dashboard overview.</td></tr>
+        <tr><td><code>GET /queries</code></td><td>Query history.</td></tr>
+        <tr><td><code>GET /healthz</code></td><td>Health check (<code>status: ok</code> + timestamp).</td></tr>
+        <tr><td><code>GET /metrics</code></td><td>Prometheus metrics.</td></tr>
+        <tr><td><code>GET/POST/DELETE /api/blocklist</code></td><td>Blocklist management — see the <a href="api.html">API reference</a>.</td></tr>
+      </table>
+
+      <h2 id="prometheus">Prometheus + Grafana setup</h2>
+<pre class="codeblock"><code># prometheus.yml
+scrape_configs:
+  - job_name: 'sentricore-dns'
+    static_configs:
+      - targets: ['127.0.0.1:5000']</code></pre>
+      <p>Useful expressions once scraping:</p>
+<pre class="codeblock"><code>rate(sentricore_total_queries[5m])
+rate(sentricore_blocked_queries[5m])
+sentricore_cache_hits / (sentricore_cache_hits + sentricore_cache_misses)</code></pre>
+
+      <h2 id="blocklists">Working with blocklists</h2>
+      <p><strong>Static lists:</strong> drop files under <code>blocklists/</code> (one domain per line; ad-block style hosts entries like <code>0.0.0.0 domain</code> are normalized automatically). All <code>blocklist_sources</code> — files or URLs — are merged and reloaded every <code>blocklist_update_interval</code> seconds with no restart needed.</p>
+      <p><strong>Dynamic entries:</strong> manage domains at runtime through the REST API; changes persist to the database. Full details in the <a href="api.html">API reference</a>.</p>
+
+      <h2 id="testing">Testing &amp; CI</h2>
+<pre class="codeblock"><code>./run_tests.sh          # pytest suite
+# GitHub Actions run tests, linting, coverage, and Docker builds on every push</code></pre>
+
+      <p class="more-line">Next: <a href="getting-started.html">Getting started guide →</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>

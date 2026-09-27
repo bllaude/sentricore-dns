@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentricore DNS — Security-First DNS Proxy for Home &amp; Edge Networks</title>
+  <meta name="description" content="Sentricore DNS is an open-source DNS proxy that blocks malicious domains, caches responses, rate-limits clients, and logs every query — with a live dashboard and Prometheus metrics built in.">
+  <meta property="og:title" content="Sentricore DNS — Security-First DNS Proxy">
+  <meta property="og:description" content="Block malicious domains, cache responses, rate-limit clients, and watch every query in real time. Self-hosted, lightweight, observable.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href="https://sentricore.github.io/sentricore-dns-site/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Sentricore DNS Proxy",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Linux, Docker",
+    "description": "Open-source security-focused DNS proxy with domain blocking, LRU caching, per-client rate limiting, SQLite query logging, Flask dashboard, and Prometheus metrics.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <img src="images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#architecture">Architecture</a>
+      <a href="pages/features.html">Deep Dive</a>
+      <a href="pages/api.html">API</a>
+      <a href="pages/pricing.html">Pricing</a>
+      <a href="pages/docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="pages/getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Open source · Self-hosted · Python 3.11+</p>
+        <h1>Malicious domains never reach your devices.</h1>
+        <p class="lede">
+          Sentricore DNS is a security-first DNS proxy that blocks known-bad domains,
+          caches good answers, rate-limits noisy clients, and records every query to SQLite —
+          all in a single lightweight service you can run on a Raspberry Pi or in Docker.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-lg" href="pages/getting-started.html">Deploy in 5 minutes →</a>
+          <a class="btn btn-outline btn-lg" href="#quickstart">View quickstart</a>
+        </div>
+        <ul class="hero-stats">
+          <li><strong>&lt;5 ms</strong><span>cached lookups</span></li>
+          <li><strong>10k</strong><span>LRU cache entries</span></li>
+          <li><strong>0</strong><span>telemetry sent out</span></li>
+        </ul>
+      </div>
+      <div class="hero-visual">
+        <div class="terminal" role="img" aria-label="Terminal demo showing a blocked DNS query">
+          <div class="terminal-bar"><span></span><span></span><span></span><em>client ~ </em></div>
+<pre><code>$ dig @127.0.0.1 -p 5300 evil.example
+<span class="t-ok">;; ANSWER SECTION:</span>
+evil.example.  300  IN  A  <span class="t-block">0.0.0.0  (blocked by Sentricore)</span>
+
+$ dig @127.0.0.1 -p 5300 github.com
+<span class="t-ok">;; ANSWER SECTION:</span>
+github.com.    300  IN  A  20.205.243.166  <span class="t-dim">(cache hit, 1.2 ms)</span>
+
+$ curl -s localhost:5000/metrics | grep sentricore
+<span class="t-metric">sentricore_total_queries 128441</span>
+<span class="t-metric">sentricore_blocked_queries 3902</span>
+<span class="t-metric">sentricore_cache_hits 97220</span></code></pre>
+        </div>
+        <img class="hero-diagram" src="images/architecture.svg" alt="Sentricore DNS request flow: client, proxy pipeline, upstream resolver, dashboard" width="640" height="200">
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR -->
+  <section class="trustbar">
+    <div class="container trust-inner">
+      <span>Built with</span>
+      <span class="trust-item">Python 3.11+</span>
+      <span class="trust-item">dnslib</span>
+      <span class="trust-item">Flask + gunicorn</span>
+      <span class="trust-item">SQLite WAL</span>
+      <span class="trust-item">Prometheus</span>
+      <span class="trust-item">Docker &amp; systemd ready</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="section">
+    <div class="container">
+      <h2 class="section-title">One proxy. Every defensive layer.</h2>
+      <p class="section-sub">Six subsystems working together on the DNS path — no agents, no appliances, no cloud dependency.</p>
+      <div class="feature-grid">
+        <article class="card">
+          <div class="card-icon">🛡️</div>
+          <h3>Blocklist enforcement</h3>
+          <p>Local files or URL feeds, merged and hot-reloaded every 5 minutes. Ad-block hosts syntax is normalized automatically — no restarts.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">⚡</div>
+          <h3>LRU response cache</h3>
+          <p>Configurable TTL and max size keep repeat lookups instant and shave load off your upstream resolver.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">🚦</div>
+          <h3>Per-client rate limiting</h3>
+          <p>Token-bucket QPS limits per source IP stop abuse and DNS amplification before it starts.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">🗄️</div>
+          <h3>Batched SQLite logging</h3>
+          <p>Every query, block, and cache event lands in SQLite via batched writes — durable history without the I/O tax.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">📊</div>
+          <h3>Dashboard &amp; Prometheus</h3>
+          <p>A Flask web dashboard for humans and a native <code>/metrics</code> endpoint for machines. Grafana-ready out of the box.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">🔑</div>
+          <h3>API-key protected control plane</h3>
+          <p>Add or remove blocked domains over REST, secured with a shared secret. Writes are denied by default without one.</p>
+        </article>
+      </div>
+      <p class="more-line"><a href="pages/features.html">Compare all capabilities →</a></p>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture" class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">How a query flows through Sentricore</h2>
+      <div class="arch-grid">
+        <ol class="arch-steps">
+          <li><strong>Ingest.</strong> UDP listeners on port 5300 accept client queries and hand them to the proxy pipeline.</li>
+          <li><strong>Rate limit.</strong> Each source IP gets its own token bucket (default 50 QPS sustained, 100 burst).</li>
+          <li><strong>Check cache.</strong> Fresh answers return immediately — typically in single-digit milliseconds.</li>
+          <li><strong>Screen blocklists.</strong> Merged domain lists decide: sinkhole the bad, forward the good to your upstream resolver.</li>
+          <li><strong>Record &amp; expose.</strong> Batched writes feed SQLite, the dashboard, and Prometheus counters simultaneously.</li>
+        </ol>
+        <figure class="arch-figure">
+          <img src="images/query-flow.svg" alt="Query pipeline: rate limiter, cache, blocklist, upstream, logger" width="560" height="360">
+          <figcaption>The proxy pipeline — deterministic, observable, and fully local.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section id="quickstart" class="section">
+    <div class="container narrow">
+      <h2 class="section-title">Up and running in three commands</h2>
+      <div class="tabs" data-tabs>
+        <div class="tab-buttons" role="tablist">
+          <button class="tab-btn active" role="tab" aria-selected="true" data-tab="docker">Docker Compose</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="linux">Bare metal / Linux</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="pi">Raspberry Pi</button>
+        </div>
+        <div class="tab-panel active" data-panel="docker">
+<pre class="codeblock"><code>git clone https://github.com/SentriCore/sentricore-dns-proxy.git
+cd sentricore-dns-proxy
+docker compose up -d</code></pre>
+          <p class="tab-note">Starts the proxy on <code>:5300/udp</code> and the dashboard on <code>:5000</code>.</p>
+        </div>
+        <div class="tab-panel" data-panel="linux">
+<pre class="codeblock"><code>python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python run_proxy.py   # DNS proxy on :5300
+python run_web.py     # Dashboard on :5000</code></pre>
+          <p class="tab-note">Point clients at <code>&lt;host&gt;:5300</code> and open <code>http://127.0.0.1:5000</code>.</p>
+        </div>
+        <div class="tab-panel" data-panel="pi">
+<pre class="codeblock"><code>curl -fsSL https://raw.githubusercontent.com/SentriCore/sentricore-dns-proxy/main/install.sh | bash
+sudo systemctl status sentricore-dns-proxy</code></pre>
+          <p class="tab-note">The installer registers both systemd services and enables them on boot.</p>
+        </div>
+      </div>
+      <p class="more-line"><a href="pages/getting-started.html">Full installation guide →</a></p>
+    </div>
+  </section>
+
+  <!-- BENEFITS -->
+  <section class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">Why self-hosted DNS filtering wins</h2>
+      <div class="compare-table-wrap">
+        <table class="compare">
+          <thead>
+            <tr><th scope="col"></th><th scope="col">Sentricore DNS</th><th scope="col">Public filtered DNS</th><th scope="col">Hardware appliance</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Data stays on your network</th><td class="yes">✔</td><td class="no">✘</td><td class="yes">✔</td></tr>
+            <tr><th scope="row">Custom blocklists &amp; API control</th><td class="yes">✔</td><td class="partial">Limited</td><td class="partial">Vendor UI</td></tr>
+            <tr><th scope="row">Full query history &amp; metrics</th><td class="yes">✔ SQLite + Prometheus</td><td class="no">✘</td><td class="partial">Export tools</td></tr>
+            <tr><th scope="row">Cost</th><td class="yes">Free, open source</td><td class="yes">Free–$$</td><td class="no">$$$ upfront</td></tr>
+            <tr><th scope="row">Runs on hardware you own</th><td class="yes">Pi, VM, container</td><td class="n/a">—</td><td class="no">Vendor only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- USE CASES -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Built for the networks admins actually run</h2>
+      <div class="usecase-grid">
+        <article class="card usecase">
+          <h3>🏠 Privacy-conscious homes</h3>
+          <p>Filter ads and malware at the network edge for every device — including the ones without an app.</p>
+        </article>
+        <article class="card usecase">
+          <h3>🧪 Homelab &amp; IoT segmentation</h3>
+          <p>Keep firmware phoning home to dead addresses while you watch exactly what each gadget tries to resolve.</p>
+        </article>
+        <article class="card usecase">
+          <h3>🏢 Small-office perimeter defense</h3>
+          <p>Rate limiting plus blocklists blunt drive-by malware and DNS amplification before they touch staff laptops.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section class="cta-band">
+    <div class="container cta-inner">
+      <h2>Your network's questions deserve a smarter answer.</h2>
+      <p>Clone it, configure it, and block your first malicious domain tonight.</p>
+      <div class="hero-actions">
+        <a class="btn btn-light btn-lg" href="pages/getting-started.html">Start the quickstart</a>
+        <a class="btn btn-outline-light btn-lg" href="https://github.com/SentriCore/sentricore-dns-proxy">Star on GitHub ★</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="index.html">
+        <img src="images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="pages/features.html">Capability matrix</a>
+      <a href="pages/pricing.html">Pricing</a>
+      <a href="pages/security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="pages/docs.html">Documentation</a>
+      <a href="pages/api.html">REST API reference</a>
+      <a href="pages/getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="pages/about.html">About</a>
+      <a href="pages/blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="scripts/main.js"></script>
+</body>
+</html>

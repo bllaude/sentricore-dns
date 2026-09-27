@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — Sentricore DNS</title>
+  <meta name="description" content="Install and run Sentricore DNS in under five minutes with Docker Compose, bare metal, or the Raspberry Pi installer.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / Getting started</p>
+      <h1>Getting started</h1>
+      <p>From clone to your first blocked query in about five minutes. Pick your deployment style below.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container narrow prose">
+      <h2 id="step1">Step 1 · Get the code</h2>
+<pre class="codeblock"><code>git clone https://github.com/SentriCore/sentricore-dns-proxy.git
+cd sentricore-dns-proxy</code></pre>
+
+      <h2 id="step2">Step 2 · Run it</h2>
+      <div class="tabs" data-tabs>
+        <div class="tab-buttons" role="tablist">
+          <button class="tab-btn active" role="tab" aria-selected="true" data-tab="docker">Docker Compose</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="bare">Bare metal</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="pi">Raspberry Pi</button>
+        </div>
+        <div class="tab-panel active" data-panel="docker">
+<pre class="codeblock"><code>docker compose up -d
+docker compose ps   # proxy + web should both be running</code></pre>
+          <p class="tab-note">The compose file exposes UDP <code>5300</code> (proxy) and TCP <code>5000</code> (dashboard) and persists <code>data/</code> and <code>logs/</code> as volumes.</p>
+        </div>
+        <div class="tab-panel" data-panel="bare">
+<pre class="codeblock"><code>python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+
+python run_proxy.py   # terminal 1: DNS proxy on :5300
+python run_web.py     # terminal 2: dashboard on :5000</code></pre>
+          <p class="tab-note">For production use gunicorn in front of the Flask app instead of <code>run_web.py</code>.</p>
+        </div>
+        <div class="tab-panel" data-panel="pi">
+<pre class="codeblock"><code>./install.sh
+sudo systemctl enable --now sentricore-dns-proxy sentricore-dns-web
+systemctl status sentricore-dns-proxy</code></pre>
+          <p class="tab-note">The installer creates a venv, installs dependencies, and registers both systemd units so the proxy survives reboots.</p>
+        </div>
+      </div>
+
+      <h2 id="step3">Step 3 · Point a client at it</h2>
+<pre class="codeblock"><code># Test from any machine that can reach the host:
+dig @&lt;host&gt; -p 5300 example.com
+
+# A blocked domain returns the sinkhole answer:
+dig @&lt;host&gt; -p 5300 evil.example
+;; ANSWER SECTION:
+evil.example.  300  IN  A  0.0.0.0</code></pre>
+      <p>To make it your network's resolver, set DHCP option 6 (or the adapter's DNS server) to <code>&lt;host&gt;</code>. Clients that hard-code port 53 can be redirected with a single iptables DNAT rule:</p>
+<pre class="codeblock"><code>iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination &lt;host&gt;:5300</code></pre>
+
+      <h2 id="step4">Step 4 · Watch it work</h2>
+      <ul>
+        <li>Open the dashboard: <code>http://&lt;host&gt;:5000</code></li>
+        <li>Scrape metrics: <code>curl http://&lt;host&gt;:5000/metrics</code></li>
+        <li>Block your first custom domain:
+<pre class="codeblock"><code>export SENTRICORE_API_KEY="pick-a-long-random-secret"   # set on the server
+curl -X POST http://&lt;host&gt;:5000/api/blocklist \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $SENTRICORE_API_KEY" \
+  -d '{"domain": "ads.example-tracker.com"}'</code></pre></li>
+      </ul>
+
+      <div class="callout">
+        <strong>You're protected.</strong> Queries now flow through rate limiting, caching, and blocklist screening — and every one is recorded in SQLite for the dashboard and Prometheus. Next stops: the <a href="docs.html">configuration reference</a> and the <a href="api.html">API docs</a>.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>

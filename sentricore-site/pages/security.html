@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security — Sentricore DNS</title>
+  <meta name="description" content="How Sentricore DNS approaches security: local-first data, secure defaults, API-key auth, rate limiting, and the disclosure policy.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / Security</p>
+      <h1>Security at Sentricore</h1>
+      <p>A resolver sees every domain your network asks about. That makes privacy and hardening first-class product requirements, not afterthoughts.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container narrow prose">
+      <h2 id="principles">Design principles</h2>
+      <ul>
+        <li><strong>Local-first.</strong> Query history lives in your SQLite file. There is no phone-home, no accounts, no cloud dependency to breach.</li>
+        <li><strong>Secure by default.</strong> Blocklist write APIs refuse requests unless an API key is configured; with no key set, writes are denied outright.</li>
+        <li><strong>Small surface.</strong> The proxy speaks UDP on one port; the dashboard binds <code>127.0.0.1</code> unless you deliberately expose it behind a reverse proxy.</li>
+        <li><strong>Defense in depth.</strong> Per-client token-bucket rate limiting contains noisy or compromised hosts before they can amplify traffic upstream.</li>
+      </ul>
+
+      <h2 id="hardening">Hardening checklist</h2>
+<pre class="codeblock"><code># 1. Set a strong API key (long random string) for the web service
+export SENTRICORE_API_KEY="$(openssl rand -hex 32)"
+
+# 2. Keep the dashboard loopback-only and front it with TLS via nginx/caddy
+# 3. Run containers as non-root and pin image digests
+# 4. Restrict who may reach :5300 with your firewall
+sudo ufw allow from 192.168.0.0/24 to any port 5300 proto udp
+# 5. Back up (or rotate) data/sentricore.db if query history is sensitive</code></pre>
+
+      <h2 id="known-limits">Known limitations (stated honestly)</h2>
+      <ul>
+        <li>DNS traffic between client and proxy is UDP and unencrypted by default — encrypt the last hop with DNS-over-TLS at the client or a tunnel if that matters in your threat model.</li>
+        <li>Blocking is domain-exact; IP-based exfiltration and DoH bypass require complementary egress controls.</li>
+        <li>SQLite is single-node by design; large fleets should ship logs to a central store themselves.</li>
+      </ul>
+
+      <h2 id="disclosure">Responsible disclosure</h2>
+      <p>Found a vulnerability? Email <a href="mailto:security@sentricore.dev">security@sentricore.dev</a> with private details. We acknowledge reports within 3 business days and aim to ship fixes within 30 days for confirmed issues. Please avoid public issue trackers until a patch exists.</p>
+
+      <p class="more-line"><a href="docs.html">Configuration reference →</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>

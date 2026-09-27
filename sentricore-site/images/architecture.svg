@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" width="900" height="260" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 10 5 0 10z" fill="#22d3ee"/>
+    </marker>
+    <style>
+      .box { fill:#131c31; stroke:#24304d; stroke-width:1.5; rx:10; }
+      .hl { stroke:#22d3ee; }
+      .lbl { fill:#e2e8f0; font-size:15px; font-weight:600; }
+      .sub { fill:#94a3b8; font-size:11.5px; }
+      .flow { stroke:#22d3ee; stroke-width:2; fill:none; marker-end:url(#arr); }
+      .flowdash { stroke:#34d399; stroke-width:2; fill:none; stroke-dasharray:5 4; marker-end:url(#arr); }
+    </style>
+  </defs>
+
+  <!-- Client -->
+  <rect class="box" x="20" y="90" width="150" height="80" rx="10"/>
+  <text class="lbl" x="95" y="122" text-anchor="middle">Your devices</text>
+  <text class="sub" x="95" y="142" text-anchor="middle">laptops · phones · IoT</text>
+
+  <!-- Proxy pipeline -->
+  <rect class="box hl" x="240" y="40" width="300" height="180" rx="10"/>
+  <text class="lbl" x="390" y="66" text-anchor="middle">Sentricore DNS Proxy :5300</text>
+  <rect x="262" y="84" width="126" height="34" rx="6" fill="#0a0f1e" stroke="#24304d"/>
+  <text class="sub" x="325" y="105" text-anchor="middle" fill="#22d3ee">Rate limiter (QPS)</text>
+  <rect x="402" y="84" width="114" height="34" rx="6" fill="#0a0f1e" stroke="#24304d"/>
+  <text class="sub" x="459" y="105" text-anchor="middle" fill="#22d3ee">LRU cache</text>
+  <rect x="262" y="132" width="126" height="34" rx="6" fill="#0a0f1e" stroke="#24304d"/>
+  <text class="sub" x="325" y="153" text-anchor="middle" fill="#f87171">Blocklist screen</text>
+  <rect x="402" y="132" width="114" height="34" rx="6" fill="#0a0f1e" stroke="#24304d"/>
+  <text class="sub" x="459" y="153" text-anchor="middle" fill="#34d399">SQLite logger</text>
+  <text class="sub" x="390" y="196" text-anchor="middle">hot-reload feeds · batched writes</text>
+
+  <!-- Upstream -->
+  <rect class="box" x="630" y="90" width="150" height="80" rx="10"/>
+  <text class="lbl" x="705" y="122" text-anchor="middle">Upstream resolver</text>
+  <text class="sub" x="705" y="142" text-anchor="middle">1.1.1.1 : 53 (configurable)</text>
+
+  <!-- Dashboard below -->
+  <rect class="box" x="290" y="238" width="200" height="0" rx="0"/>
+  <rect class="box" x="630" y="196" width="150" height="52" rx="10"/>
+  <text class="lbl" x="705" y="216" text-anchor="middle" font-size="13">Dashboard</text>
+  <text class="sub" x="705" y="234" text-anchor="middle">Flask :5000 · /metrics</text>
+
+  <!-- Blocklists feeding proxy -->
+  <rect class="box" x="20" y="196" width="150" height="52" rx="10"/>
+  <text class="lbl" x="95" y="216" text-anchor="middle" font-size="13">Blocklists</text>
+  <text class="sub" x="95" y="234" text-anchor="middle">files + URL feeds</text>
+
+  <!-- Flows -->
+  <path class="flow" d="M170 130 H232"/>
+  <path class="flow" d="M548 130 H622"/>
+  <path class="flowdash" d="M622 150 C 590 175 560 195 520 205 L 498 210"/>
+  <text class="sub" x="200" y="118" fill="#94a3b8">UDP 5300</text>
+  <text class="sub" x="560" y="118" fill="#94a3b8">forward</text>
+  <text class="sub" x="540" y="222" fill="#34d399">metrics + history</text>
+  <path class="flowdash" d="M95 196 V178 H254" />
+  <text class="sub" x="120" y="172" fill="#94a3b8">reload every 300 s</text>
+</svg>

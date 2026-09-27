@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — Sentricore DNS</title>
+  <meta name="description" content="Sentricore DNS is free and open source. Optional support tiers for teams that want help deploying and operating it.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / Pricing</p>
+      <h1>The software is free. Forever.</h1>
+      <p>Sentricore DNS is MIT-licensed open source with every feature included — no seats, no tiers, no nags. Pay only if you want a human to answer your phone.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container pricing-grid">
+      <article class="card price-card">
+        <h3>Community</h3>
+        <p class="amount">$0<small> / forever</small></p>
+        <ul>
+          <li>All features: blocking, cache, rate limiting, dashboard, metrics, API</li>
+          <li>Docker, systemd &amp; bare-metal deployment</li>
+          <li>Public issue tracker &amp; community Discord</li>
+          <li>CI-tested releases on GitHub</li>
+        </ul>
+        <a class="btn btn-outline" href="getting-started.html">Download &amp; run</a>
+      </article>
+
+      <article class="card price-card featured">
+        <span class="badge">Most popular</span>
+        <h3>Pro (managed help)</h3>
+        <p class="amount">$19<small> / month</small></p>
+        <ul>
+          <li>Everything in Community</li>
+          <li>Priority issue triage (1 business day)</li>
+          <li>Curated, mirrored threat blocklist feeds</li>
+          <li>Grafana dashboard pack &amp; alert rules</li>
+          <li>Config review with a maintainer (quarterly)</li>
+        </ul>
+        <a class="btn btn-primary" href="mailto:support@sentricore.dev?subject=Pro%20trial">Start 14-day trial</a>
+      </article>
+
+      <article class="card price-card">
+        <h3>Enterprise</h3>
+        <p class="amount">Custom</p>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Multi-site / fleet deployment guidance</li>
+          <li>SSO-fronted dashboard architecture review</li>
+          <li>Security questionnaire &amp; vendor paperwork support</li>
+          <li>Private roadmap input and paid feature bounties</li>
+        </ul>
+        <a class="btn btn-outline" href="mailto:sales@sentricore.dev?subject=Enterprise%20inquiry">Talk to the maintainers</a>
+      </article>
+    </div>
+
+    <div class="container narrow prose" style="margin-top:3rem">
+      <h2 id="faq">Frequently asked questions</h2>
+      <dl class="faq">
+        <dt>Is anything actually paywalled?</dt>
+        <dd>No. Every capability in the <a href="features.html">capability matrix</a> ships in the MIT-licensed repository. Paid tiers buy maintainer time, not software features.</dd>
+        <dt>Why would I pay for support on free software?</dt>
+        <dd>Same reason people pay for RHEL: someone accountable answers the ticket at 2 a.m., reviews your config, and keeps a private mirror of hardened blocklist feeds.</dd>
+        <dt>Do you host a cloud version?</dt>
+        <dd>Deliberately not. A filtering resolver that sees all your queries should live on hardware you control — that's the product thesis.</dd>
+        <dt>Can we fork and self-support?</dt>
+        <dd>Absolutely. MIT license, no CLA, attribution-only. Fork away.</dd>
+        <dt>What are the resource requirements?</dt>
+        <dd>A Raspberry Pi Zero 2 W comfortably proxies a household. Budget ~50 MB RAM plus room for your SQLite history file.</dd>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — Sentricore DNS</title>
+  <meta name="description" content="Engineering notes from the Sentricore DNS project: blocklists, caching, rate limiting, and self-hosted network security.">
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <img src="../images/logo.svg" alt="Sentricore logo" width="32" height="32">
+      <span>Sentricore<strong>DNS</strong></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="../index.html#features">Features</a>
+      <a href="../index.html#architecture">Architecture</a>
+      <a href="features.html">Deep Dive</a>
+      <a href="api.html">API</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-ghost" href="https://github.com/SentriCore/sentricore-dns-proxy" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="getting-started.html">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumbs"><a href="../index.html">Home</a> / Blog</p>
+      <h1>Engineering notes</h1>
+      <p>Short posts from inside the proxy: what we shipped, what we measured, and what broke.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container narrow blog-list prose">
+
+      <article class="card blog-post">
+        <time datetime="2026-09-14">2026-09-14</time>
+        <h2>Why we sinkhole to 0.0.0.0 instead of dropping</h2>
+        <p>Dropping a blocked query makes browsers hang for seconds on timeouts. A fast, authoritative NXDOMAIN-style answer at <code>0.0.0.0</code> with a short TTL gives users an instant "this is blocked" signal without leaking anything upstream. We walk through the UX traces that convinced us.</p>
+      </article>
+
+      <article class="card blog-post">
+        <time datetime="2026-08-30">2026-08-30</time>
+        <h2>Batched SQLite writes: 40× fewer fsyncs at 1k QPS</h2>
+        <p>Per-query inserts melted our SD cards. Buffering events and flushing once per second kept durability where it mattered (audit history) while making sustained throughput a non-issue. Numbers, flamegraphs, and the flush-interval tuning guide are inside.</p>
+      </article>
+
+      <article class="card blog-post">
+        <time datetime="2026-08-11">2026-08-11</time>
+        <h2>Anatomy of a DNS amplification attack — and the token bucket that stops it</h2>
+        <p>A compromised IoT bulb can turn an open resolver into a cannon. We replay a captured amplification attempt against Sentricore's per-client rate limiter and show exactly where the traffic dies: 50 QPS sustained, 100 burst, everything else dropped before it reaches your upstream.</p>
+      </article>
+
+      <article class="card blog-post">
+        <time datetime="2026-07-22">2026-07-22</time>
+        <h2>Normalizing five blocklist formats so you only write one parser</h2>
+        <p>Domain-per-line, hosts files, ad-block syntax, comments, IDN edge cases — real feeds are messy. Here's the loader that merges files and URLs into one set, hot-reloads every 300 seconds, and never blocks a restart.</p>
+      </article>
+
+      <p class="more-line">Want to contribute a post? Open a PR against the <a href="https://github.com/SentriCore/sentricore-dns-proxy">source repo</a>.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="" width="28" height="28">
+        <span>Sentricore<strong>DNS</strong></span>
+      </a>
+      <p class="footer-tag">Security-first DNS proxy.<br>Open source, self-hosted, observable.</p>
+    </div>
+    <nav aria-label="Product">
+      <h4>Product</h4>
+      <a href="../index.html#features">Features</a>
+      <a href="features.html">Capability matrix</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <nav aria-label="Developers">
+      <h4>Developers</h4>
+      <a href="docs.html">Documentation</a>
+      <a href="api.html">REST API reference</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="https://github.com/SentriCore/sentricore-dns-proxy">Source on GitHub</a>
+    </nav>
+    <nav aria-label="Company">
+      <h4>Project</h4>
+      <a href="about.html">About</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2026 Sentricore Project · MIT License</span>
+    <span>Not affiliated with any DNS root operator.</span>
+  </div>
+</footer>
+
+<script src="../scripts/main.js"></script>
+</body>
+</html>
